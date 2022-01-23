@@ -17,6 +17,7 @@ class MainScene extends Phaser.Scene
 
     create()
     {
+
         var bg_1 = this.add.tileSprite(0, 0, windows.width*2, windows.height*2, 'bg-1');
         bg_1.fixedToCamera = true;
         //necesitamos un player
@@ -53,6 +54,12 @@ class MainScene extends Phaser.Scene
             fontFamily: 'verdana, arial, sans-serif' 
           });
         
+        
+
+        // Colisión solo con la parte izquierda del mundo
+        this.physics.world.setBoundsCollision(true, false, false, false);
+        // El jugador colisiona contra los límites del mundo (parte izquierda definida)
+        this.player.setCollideWorldBounds(true);
     }
 
     spriteHit (sprite1, sprite2) {
@@ -64,5 +71,12 @@ class MainScene extends Phaser.Scene
     update (time, delta)
     {
         this.player.update(time,delta);
+
+        // Validar si el jugador sale del escenario por la parte infierior
+        if (this.player.validarCaidaPlayer(config.height, this.player.y)) {
+            // Mover el jugador a las coordenadas iniciales del juego
+            this.player.y = 50;
+            this.player.x = 50;
+        }
     }
 }

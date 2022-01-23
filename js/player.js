@@ -65,4 +65,14 @@ class Player extends Phaser.Physics.Arcade.Sprite
         else
             this.play('idle', true);
     }
+
+    /**
+     * Validar si el jugador sale del escenario por la parte infierior
+     * @param {number} height alto del escenario
+     * @param {number} y posición actual del jugador en el eje Y
+     * @returns {boolean} verdadero si la posición del jugador supera el alto del escenario
+     */
+    validarCaidaPlayer(height, y) {
+        return (y >= height + 50);
+    }
 }

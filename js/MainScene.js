@@ -7,10 +7,11 @@ class MainScene extends Phaser.Scene
         this.load.image('bg-1', 'res/sky.png');
         this.load.image('sea', 'res/sea.png');
         this.load.image('player', 'res/idle-1.png');
+        this.load.image('enemy', 'res/tronchungo.png');
         //Phaser.Physics.Arcade.Sprite
         // https://gammafp.com/tool/atlas-packer/
-        this.load.atlas('sprites_jugador','res/player_anim/player_anim.png',
-        'res/player_anim/player_anim_atlas.json');
+        this.load.atlas('sprites_jugador','res/player_anim/player_anim.png', 'res/player_anim/player_anim_atlas.json');
+        this.load.atlas('sprites_enemy','res/tronchungo_anim/tronchungo.png', 'res/tronchungo_anim/tronchungo_atlas.json');
         this.load.spritesheet('tilesSprites','res/Tileset.png',
         { frameWidth: 32, frameHeight: 32 });
     }
@@ -30,7 +31,6 @@ class MainScene extends Phaser.Scene
         //enable collisions for every tile
         layer.setCollisionByExclusion(-1,true);
         this.physics.add.collider(this.player,layer);
-        this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
         this.cameras.main.startFollow(this.player);
         this.cameras.main.setBounds(0,0,map.widthInPixels,map.heightInPixels);
 
@@ -60,6 +60,11 @@ class MainScene extends Phaser.Scene
         this.physics.world.setBoundsCollision(true, false, false, false);
         // El jugador colisiona contra los límites del mundo (parte izquierda definida)
         this.player.setCollideWorldBounds(true);
+
+        this.enemy1 = this.crearEnemigo(this, layer, 240, 272, 20, 240, 15, 5);
+        this.enemy2 = this.crearEnemigo(this, layer, 480, 208, 430, 500, 10, 4);
+        this.enemy3 = this.crearEnemigo(this, layer, 680, 304, 690, 790, 10, 4);
+
     }
 
     spriteHit (sprite1, sprite2) {
@@ -72,11 +77,35 @@ class MainScene extends Phaser.Scene
     {
         this.player.update(time,delta);
 
+        this.enemy1.update(this.player);
+        this.enemy2.update();
+        this.enemy3.update();
+
         // Validar si el jugador sale del escenario por la parte infierior
         if (this.player.validarCaidaPlayer(config.height, this.player.y)) {
             // Mover el jugador a las coordenadas iniciales del juego
             this.player.y = 50;
             this.player.x = 50;
         }
+    }
+
+    /**
+     * Crear los enemigos en la escena principal
+     * @param {scene} scene Escena actual
+     * @param {layer} layer Suelo
+     * @param {number} x Posición en X
+     * @param {number} y Posición en Y
+     * @param {number} endLeft Borde izquierdo en la plataforma
+     * @param {number} endRight Borde derecho en la plataforma
+     * @param {number} vMax Valor para la velocidad máxima de movimiento
+     * @param {number} vMin Valor para la velocidad mínima de movimiento
+     * @returns Objeto de enemigo instanciado
+     */
+    crearEnemigo(scene, layer, x, y, endLeft, endRight, vMax, vMin) {
+        // Crear el enemigo plataforma
+        var enemy = new Enemy(scene, x, y, 'enemy', endLeft, endRight, vMax, vMin);
+        // Colisión entre el enemigo y el escenario
+        this.physics.add.collider(enemy, layer);
+        return enemy;
     }
 }

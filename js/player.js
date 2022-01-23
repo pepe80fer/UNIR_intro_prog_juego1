@@ -26,7 +26,7 @@ class Player extends Phaser.Physics.Arcade.Sprite
         this.anims.create({
             key: 'jump',
             frames: this.scene.anims.generateFrameNames('sprites_jugador', { start: 1, end: 4, prefix: 'jump-' }),
-            frameRate: 5,
+            frameRate: 8,
             repeat: -1
         });
         

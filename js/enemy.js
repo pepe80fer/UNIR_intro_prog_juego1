@@ -22,7 +22,6 @@ class Enemy extends Phaser.Physics.Arcade.Sprite
         this.velMin = velMin;
         this.endLeft = endLeft;
         this.endRight = endRight;
-        this.setVelocityX(this.generarValorVelocidad());
 
         this.anims.create({
             key: 'walk',
@@ -39,9 +38,9 @@ class Enemy extends Phaser.Physics.Arcade.Sprite
         });
     }
 
-    update(player)
+    update()
     {
-        this.cambiarDirección();
+        this.cambiarDireccion();
         this.play('walk', true);
     }
 
@@ -58,7 +57,7 @@ class Enemy extends Phaser.Physics.Arcade.Sprite
      * Validación de cuando el enemigo llega al borde de la plataforma para cambiar la dirección de movimiento
      * La velocidad de movimiento tambien cambia en la función generarValorVelocidad()
      */
-    cambiarDirección() {
+    cambiarDireccion() {
         if (this.x >= this.endRight) {
             this.setVelocityX(this.generarValorVelocidad() * -1);
             this.setFlipX(true); 

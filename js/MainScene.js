@@ -62,7 +62,7 @@ class MainScene extends Phaser.Scene
         this.player.setCollideWorldBounds(true);
 
         this.enemy1 = this.crearEnemigo(this, layer, 240, 272, 20, 240, 15, 5);
-        this.enemy2 = this.crearEnemigo(this, layer, 480, 208, 430, 500, 10, 4);
+        this.enemy2 = this.crearEnemigo(this, layer, 425, 208, 425, 500, 10, 4);
         this.enemy3 = this.crearEnemigo(this, layer, 680, 304, 690, 790, 10, 4);
 
     }
@@ -77,7 +77,7 @@ class MainScene extends Phaser.Scene
     {
         this.player.update(time,delta);
 
-        this.enemy1.update(this.player);
+        this.enemy1.update();
         this.enemy2.update();
         this.enemy3.update();
 

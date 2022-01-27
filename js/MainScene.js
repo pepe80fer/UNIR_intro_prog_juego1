@@ -19,15 +19,20 @@ class MainScene extends Phaser.Scene
     create()
     {
 
-        var bg_1 = this.add.tileSprite(0, 0, windows.width*2, windows.height*2, 'bg-1');
+        var bg_1 = this.add.tileSprite(0, 0, windows.width*25, windows.height*2, 'bg-1');
         bg_1.fixedToCamera = true;
         //necesitamos un player
-        this.player = new Player(this,50,100);
         var map = this.make.tilemap({ key: 'map' });
         var tiles = map.addTilesetImage('Plataformas', 'tiles');
         
+        
+        var layer5 = map.createLayer('Detalles3', tiles, 0, 0);
+        var layer4 = map.createLayer('Detalles2', tiles, 0, 0);
+        var layer3 = map.createLayer('Detalles', tiles, 0, 0);
         var layer2 = map.createLayer('Fondo', tiles, 0, 0);
         var layer = map.createLayer('Suelo', tiles, 0, 0);
+        this.player = new Player(this,50,100);
+
         //enable collisions for every tile
         layer.setCollisionByExclusion(-1,true);
         this.physics.add.collider(this.player,layer);

@@ -7,11 +7,11 @@ class MainScene extends Phaser.Scene
         this.load.image('bg-1', 'res/sky.png');
         this.load.image('sea', 'res/sea.png');
         this.load.image('player', 'res/idle-1.png');
-        this.load.image('enemy', 'res/tronchungo.png');
+        this.load.image('enemy', 'res/worm.png');
         //Phaser.Physics.Arcade.Sprite
         // https://gammafp.com/tool/atlas-packer/
         this.load.atlas('sprites_jugador','res/player_anim/player_anim.png', 'res/player_anim/player_anim_atlas.json');
-        this.load.atlas('sprites_enemy','res/tronchungo_anim/tronchungo.png', 'res/tronchungo_anim/tronchungo_atlas.json');
+        this.load.atlas('sprites_enemy','res/worm/worm_walk.png', 'res/worm/worm_walk_atlas.json');
         this.load.spritesheet('tilesSprites','res/Tileset.png',
         { frameWidth: 32, frameHeight: 32 });
     }
@@ -31,7 +31,7 @@ class MainScene extends Phaser.Scene
         var layer3 = map.createLayer('Detalles', tiles, 0, 0);
         var layer2 = map.createLayer('Fondo', tiles, 0, 0);
         var layer = map.createLayer('Suelo', tiles, 0, 0);
-        this.player = new Player(this,50,100);
+        this.player = new Player(this, 60, 60);
 
         //enable collisions for every tile
         layer.setCollisionByExclusion(-1,true);
@@ -65,33 +65,66 @@ class MainScene extends Phaser.Scene
         this.physics.world.setBoundsCollision(true, false, false, false);
         // El jugador colisiona contra los límites del mundo (parte izquierda definida)
         this.player.setCollideWorldBounds(true);
-
-        this.enemy1 = this.crearEnemigo(this, layer, 240, 272, 20, 240, 15, 5);
-        this.enemy2 = this.crearEnemigo(this, layer, 425, 208, 425, 500, 10, 4);
-        this.enemy3 = this.crearEnemigo(this, layer, 680, 304, 690, 790, 10, 4);
-
+        
+        // Se crea un grupo de físicas para los enemigos
+        this.groupEnemies = this.physics.add.group();
+        // Crear los enemigos en el escenario
+        this.createEnemies(layer);
+        // Detectar si el jugador toca alguno de los enemigos para enviarlo al inicio del juego
+        this.physics.add.overlap(this.groupEnemies, this.player, this.playerToStart, null, this);
     }
 
     spriteHit (sprite1, sprite2) {
-
         sprite1.destroy();
- 
     }
 
     update (time, delta)
     {
         this.player.update(time,delta);
-
-        this.enemy1.update();
-        this.enemy2.update();
-        this.enemy3.update();
+        this.updateEnemies();
 
         // Validar si el jugador sale del escenario por la parte infierior
         if (this.player.validarCaidaPlayer(config.height, this.player.y)) {
             // Mover el jugador a las coordenadas iniciales del juego
-            this.player.y = 50;
-            this.player.x = 50;
+            this.playerToStart();
         }
+    }
+
+    /**
+     * Mover el jugador a las coordenadas iniciales del juego
+     */
+    playerToStart() {
+        this.player.y = 60;
+        this.player.x = 60;
+
+        /* ################################################### */
+        /* Aqui se puede implementar el descuento de las vidas */
+        /* ################################################### */
+    }
+
+    /**
+     * Crear los enemigos por todo el escenario
+     * @param {layer} layer Suelo
+     */
+    createEnemies(layer) {
+        this.enemy1 = this.createEnemy(this, layer, 60, 361, 60, 240, 15, 5);
+        this.enemy2 = this.createEnemy(this, layer, 850, 105, 860, 1100, 15, 5);
+        this.enemy3 = this.createEnemy(this, layer, 1110, 361, 860, 1100, 15, 5);
+        this.enemy4 = this.createEnemy(this, layer, 1280, 425, 1281, 1510, 15, 5);
+        this.enemy5 = this.createEnemy(this, layer, 1600, 169, 1341, 1600, 15, 5);
+        this.enemy6 = this.createEnemy(this, layer, 1920, 329, 1921, 2330, 15, 5);
+        this.enemy7 = this.createEnemy(this, layer, 2335, 329, 1921, 2330, 15, 5);
+        this.enemy8 = this.createEnemy(this, layer, 2335, 329, 1921, 2330, 18, 9);
+        this.enemy9 = this.createEnemy(this, layer, 2875, 265, 2876, 2980, 10, 5);
+        this.enemy10 = this.createEnemy(this, layer, 2875, 41, 2876, 2980, 10, 5);
+        this.enemy11 = this.createEnemy(this, layer, 4035, 361, 3741, 4035, 15, 10);
+        this.enemy12 = this.createEnemy(this, layer, 3740, 361, 3741, 4035, 15, 10);
+        this.enemy13 = this.createEnemy(this, layer, 4780, 425, 4281, 4780, 15, 10);
+        this.enemy14 = this.createEnemy(this, layer, 4280, 425, 4281, 4780, 15, 10);
+        this.enemy15 = this.createEnemy(this, layer, 4280, 425, 4281, 4780, 10, 5);
+        this.enemy16 = this.createEnemy(this, layer, 5470, 425, 5471, 5920, 20, 15);
+        this.enemy17 = this.createEnemy(this, layer, 5470, 425, 5471, 5920, 20, 15);
+        this.enemy18 = this.createEnemy(this, layer, 6300, 169, 6001, 6300, 18, 12);
     }
 
     /**
@@ -106,11 +139,37 @@ class MainScene extends Phaser.Scene
      * @param {number} vMin Valor para la velocidad mínima de movimiento
      * @returns Objeto de enemigo instanciado
      */
-    crearEnemigo(scene, layer, x, y, endLeft, endRight, vMax, vMin) {
+    createEnemy(scene, layer, x, y, endLeft, endRight, vMax, vMin) {
         // Crear el enemigo plataforma
         var enemy = new Enemy(scene, x, y, 'enemy', endLeft, endRight, vMax, vMin);
         // Colisión entre el enemigo y el escenario
         this.physics.add.collider(enemy, layer);
+        // Adicionar todos los enemigos al grupo de físicas
+        this.groupEnemies.add(enemy);
         return enemy;
+    }
+
+    /**
+     * Llamar la función update de cada enemigo creado
+     */
+    updateEnemies() {
+        this.enemy1.update();
+        this.enemy2.update();
+        this.enemy3.update();
+        this.enemy4.update();
+        this.enemy5.update();
+        this.enemy6.update();
+        this.enemy7.update();
+        this.enemy8.update();
+        this.enemy9.update();
+        this.enemy10.update();
+        this.enemy11.update();
+        this.enemy12.update();
+        this.enemy13.update();
+        this.enemy14.update();
+        this.enemy15.update();
+        this.enemy16.update();
+        this.enemy17.update();
+        this.enemy18.update();
     }
 }

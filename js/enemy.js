@@ -25,15 +25,8 @@ class Enemy extends Phaser.Physics.Arcade.Sprite
 
         this.anims.create({
             key: 'walk',
-            frames: this.scene.anims.generateFrameNames('sprites_enemy', { start: 1, end: 6, prefix: 'walk-' }),
-            frameRate: 10,
-            repeat: -1
-        });
-
-        this.anims.create({
-            key: 'attack',
-            frames: this.scene.anims.generateFrameNames('sprites_enemy', { start: 1, end: 5, prefix: 'attack-' }),
-            frameRate: 10,
+            frames: this.scene.anims.generateFrameNames('sprites_enemy', { start: 1, end: 9, prefix: 'walk-' }),
+            frameRate: 16,
             repeat: -1
         });
     }

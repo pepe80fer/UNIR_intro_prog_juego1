@@ -54,13 +54,14 @@ class MainScene extends Phaser.Scene
                 var seta = new Seta(this,obj.x,obj.y);
                 this.setas.push(seta);
                 //GBW Inicio
-                this.physics.add.overlap(seta, this.player, function (seta, scoreText){
+                this.physics.add.overlap(seta, this.player, function (seta){
                     seta.destroy();
                     this.score = this.score + 1;
-                //GBW Fin
                 }, null, this);
+                //GBW Fin
             }
-        }
+        } 
+
 
         // Colisión solo con la parte izquierda del mundo
         this.physics.world.setBoundsCollision(true, false, false, false);
@@ -92,28 +93,6 @@ class MainScene extends Phaser.Scene
         // GBW Fin
     }
 
-    zeroPad(number, size){
-        var stringNumber = String(number);
-        while(stringNumber.length < (size || 2)){
-          stringNumber = '0' + stringNumber;
-        }
-        return stringNumber;
-    }
-
-    /*createSetas(layer) {
-        
-        Setas = this.physics.add.group({
-            key:'seta',
-            repeat: 10,
-            setXY: { x:12, y:0, setpX:40 }
-        });
-
-        Setas.children.iterate((child) => {
-            child.setBounceY(Phaser.Math.FloatBetween(0.4,0.8));
-        });
-    }*/
-
-
     spriteHit (sprite1, sprite2) {
         sprite1.destroy();
     }
@@ -132,13 +111,6 @@ class MainScene extends Phaser.Scene
             // Mover el jugador a las coordenadas iniciales del juego
             this.playerToStart();
         }
-    }
-
-    coleccionarSeta(player, seta){
-        seta.disableBody(true,true);
-
-        this.score += 1;
-        
     }
 
     /**

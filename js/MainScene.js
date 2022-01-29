@@ -17,7 +17,6 @@ class MainScene extends Phaser.Scene
 
         // GBW 20220128 Inicio
         this.load.audio('musicaFondo', 'res/assets/Background.mp3');
-        // this.load.audio('salto', 'res/assets/Jump.mp3');
         // GBW Fin
           
     }

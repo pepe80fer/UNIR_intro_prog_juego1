@@ -86,6 +86,7 @@ class MainScene extends Phaser.Scene
         this.scoreText.setScrollFactor(0);
 
         let sonidoFondo = this.sound.add('musicaFondo');
+        sonidoFondo.loop = true;
         sonidoFondo.play();
 
         // GBW Fin

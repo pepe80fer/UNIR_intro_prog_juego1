@@ -14,6 +14,12 @@ class MainScene extends Phaser.Scene
         this.load.atlas('sprites_enemy','res/worm/worm_walk.png', 'res/worm/worm_walk_atlas.json');
         this.load.spritesheet('tilesSprites','res/Tileset.png',
         { frameWidth: 32, frameHeight: 32 });
+
+        // GBW 20220128 Inicio
+        this.load.audio('musicaFondo', 'res/assets/Background.mp3');
+        this.load.audio('salto', 'res/assets/Jump.mp3');
+        // GBW Fin
+          
     }
 
     create()
@@ -39,7 +45,6 @@ class MainScene extends Phaser.Scene
         this.cameras.main.startFollow(this.player);
         this.cameras.main.setBounds(0,0,map.widthInPixels,map.heightInPixels);
 
-        
         this.objetos = map.getObjectLayer('objetos')['objects'];
         this.setas = [];
         for(var i = 0; i < this.objetos.length; ++i)
@@ -49,17 +54,14 @@ class MainScene extends Phaser.Scene
             {
                 var seta = new Seta(this,obj.x,obj.y);
                 this.setas.push(seta);
-                this.physics.add.overlap(seta, this.player, this.spriteHit,null,this);
+                //GBW Inicio
+                this.physics.add.overlap(seta, this.player, function (seta, scoreText){
+                    seta.destroy();
+                    this.score = this.score + 1;
+                //GBW Fin
+                }, null, this);
             }
         }
-        this.score = 1;
-        this.scoreText = this.add.text(16, 16, 'PUNTOS: '+this.score, { 
-            fontSize: '20px', 
-            fill: '#000', 
-            fontFamily: 'verdana, arial, sans-serif' 
-          });
-        
-        
 
         // Colisión solo con la parte izquierda del mundo
         this.physics.world.setBoundsCollision(true, false, false, false);
@@ -72,7 +74,45 @@ class MainScene extends Phaser.Scene
         this.createEnemies(layer);
         // Detectar si el jugador toca alguno de los enemigos para enviarlo al inicio del juego
         this.physics.add.overlap(this.groupEnemies, this.player, this.playerToStart, null, this);
+
+        this.score = 0;
+
+        //GBW Inicio
+
+        this.scoreText = this.add.text(16, 16, 'SCORE: '+ this.score, { 
+            fontSize: '20px', 
+            fill: '#000', 
+            fontFamily: 'verdana, arial, sans-serif' 
+          });
+        this.scoreText.setScrollFactor(0);
+
+        let sonidoFondo = this.sound.add('musicaFondo');
+        sonidoFondo.play();
+
+        // GBW Fin
     }
+
+    zeroPad(number, size){
+        var stringNumber = String(number);
+        while(stringNumber.length < (size || 2)){
+          stringNumber = '0' + stringNumber;
+        }
+        return stringNumber;
+    }
+
+    /*createSetas(layer) {
+        
+        Setas = this.physics.add.group({
+            key:'seta',
+            repeat: 10,
+            setXY: { x:12, y:0, setpX:40 }
+        });
+
+        Setas.children.iterate((child) => {
+            child.setBounceY(Phaser.Math.FloatBetween(0.4,0.8));
+        });
+    }*/
+
 
     spriteHit (sprite1, sprite2) {
         sprite1.destroy();
@@ -83,11 +123,22 @@ class MainScene extends Phaser.Scene
         this.player.update(time,delta);
         this.updateEnemies();
 
+        //GBW Inicio
+        this.scoreText.setText('SCORE: ' + this.score);
+        //GBW Fin
+
         // Validar si el jugador sale del escenario por la parte infierior
         if (this.player.validarCaidaPlayer(config.height, this.player.y)) {
             // Mover el jugador a las coordenadas iniciales del juego
             this.playerToStart();
         }
+    }
+
+    coleccionarSeta(player, seta){
+        seta.disableBody(true,true);
+
+        this.score += 1;
+        
     }
 
     /**

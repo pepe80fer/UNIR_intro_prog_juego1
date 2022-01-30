@@ -8,10 +8,10 @@ class MainScene extends Phaser.Scene
     {
         this.load.image('tiles','res/Tileset.png');
         this.load.tilemapTiledJSON('map','res/Map.json');
-        this.load.image('bg-1', 'res/sky.png');
-        this.load.image('sea', 'res/sea.png');
+        this.load.image('bg-1', 'res/fondo_cielo.png');
         this.load.image('player', 'res/idle-1.png');
         this.load.image('enemy', 'res/worm.png');
+        this.load.image('fall', 'res/assets/fall.png');
         //Phaser.Physics.Arcade.Sprite
         // https://gammafp.com/tool/atlas-packer/
         this.load.atlas('sprites_jugador','res/player_anim/player_anim.png', 'res/player_anim/player_anim_atlas.json');
@@ -50,10 +50,16 @@ class MainScene extends Phaser.Scene
         this.cameras.main.startFollow(this.player);
         this.cameras.main.setBounds(0,0,map.widthInPixels,map.heightInPixels);
 
+
         // Colisión solo con la parte izquierda del mundo
-        this.physics.world.setBoundsCollision(true, false, false, false);
+        this.physics.world.setBoundsCollision(true, false, false, true);
         // El jugador colisiona contra los límites del mundo (parte izquierda definida)
         this.player.setCollideWorldBounds(true);
+
+        this.fall = this.physics.add.sprite(0, 479, 'fall');
+        this.fall.setCollideWorldBounds(true);
+
+        this.physics.add.overlap(this.fall, this.player, () => this.verificarContinuaJuego(), null, this);
         
         // Se crea un grupo de físicas para los enemigos
         this.groupEnemies = this.physics.add.group();
@@ -200,11 +206,8 @@ class MainScene extends Phaser.Scene
         this.scoreFinalText.setText('SCORE: ' + this.score);
         //GBW
 
-        // Validar si el jugador sale del escenario por la parte inferior
-        if (this.player.validarCaidaPlayer(config.height, this.player.y)) {
-            // Mover el jugador a las coordenadas iniciales del juego
-            this.verificarContinuaJuego();
-        }
+        // El sprite fall se mueve siempre a la posición X del player, para capturar si cae al agua.
+        this.fall.x = this.player.x;
     }
 
     /**

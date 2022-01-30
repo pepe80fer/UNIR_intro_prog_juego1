@@ -24,6 +24,8 @@ class MainScene extends Phaser.Scene
         this.load.audio('musicaFondo', 'res/assets/Background.mp3');
         this.load.image('portal', 'res/assets/portal.png');
         this.load.image('victory', 'res/assets/Victory.png');
+        //Carga delo sonido de salto a la escena
+        this.load.audio('sonidoSalto', 'res/assets/Jump.mp3');
         // GBW Fin
 
         this.load.image('livesPic', 'res/heart.png');
@@ -33,7 +35,6 @@ class MainScene extends Phaser.Scene
 
     create()
     {
-
         var bg_1 = this.add.tileSprite(0, 0, windows.width*25, windows.height*2, 'bg-1');
         bg_1.fixedToCamera = true;
         //necesitamos un player
@@ -193,6 +194,12 @@ class MainScene extends Phaser.Scene
         this.scoreFinalText.visible = false;
         this.scoreFinalText.setScrollFactor(0);
 
+        //Inclusión de captura de evento cuando se presiona la tecla ESPACIO
+        this.spacebar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+        //Agregando de sonido de salto a la escena
+        this.sonidoSalto = this.sound.add('sonidoSalto');
+        
+
         // GBW Fin
     }
     createExtraLife(scene, layer, x, y) {
@@ -236,15 +243,12 @@ class MainScene extends Phaser.Scene
             if(this.vidasJugador > 0 && !this.invulnerabilidadJugador)
             {
                 this.invulnerabilidadJugador = true;
-
                 //this.playerToStart();
                 this.vidasJugador--;
 
                 this.validarVidas();
                 this.visibilityCounter = 0;
                 this.efectoInvulnerabilidad();
-
-
             }
             else
                 this.GameOver();
@@ -319,6 +323,14 @@ anadirVida(){
         //GBW   Se actualizar el score cada vez que coge una seta
         this.scoreText.setText('SCORE: ' + this.score);
         this.scoreFinalText.setText('SCORE: ' + this.score);
+
+        //Lógica para que suene el sonido de salto cuando se presiona ESPACIO
+        if (Phaser.Input.Keyboard.JustDown(this.spacebar))
+        {
+            if(this.player.body.onFloor()){
+                this.sonidoSalto.play();
+            }
+        }
         //GBW
 
         // El sprite fall se mueve siempre a la posición X del player, para capturar si cae al agua.

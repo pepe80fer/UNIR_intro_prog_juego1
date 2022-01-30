@@ -24,8 +24,16 @@ class MainScene extends Phaser.Scene
         this.load.audio('musicaFondo', 'res/assets/Background.mp3');
         this.load.image('portal', 'res/assets/portal.png');
         this.load.image('victory', 'res/assets/Victory.png');
-        //Carga delo sonido de salto a la escena
+        //Carga del sonido de salto a la escena
         this.load.audio('sonidoSalto', 'res/assets/Jump.mp3');
+        //Carga del sonido de golpe o dano a la escena
+        this.load.audio('sonidocolisionEnemigo', 'res/assets/golpe.mp3');
+        //Carga del sonido de agarrar setas a la escena
+        this.load.audio('sonidoseta', 'res/assets/agarrarsetas.mp3');
+        //Carga del sonido de game over a la escena
+        this.load.audio('sonidogameOver', 'res/assets/gameover.mp3');
+        //Carga del sonido de victoria a la escena
+        this.load.audio('sonidovictory', 'res/assets/ganar.mp3');
         // GBW Fin
 
         this.load.image('livesPic', 'res/heart.png');
@@ -70,8 +78,17 @@ class MainScene extends Phaser.Scene
         this.groupEnemies = this.physics.add.group();
         // Crear los enemigos en el escenario
         this.createEnemies(layer);
+         //Agregando del sonido de golpe o dano a la escena
+        this.sonidocolisionEnemigo = this.sound.add('sonidocolisionEnemigo');
+         //Agregando del sonido de agarrar setas a la escena
+        this.sonidoseta = this.sound.add('sonidoseta');
+        //Agregando del sonido de game over a la escena
+        this.sonidogameOver = this.sound.add('sonidogameOver');
+        //Agregando del sonido de victoria a la escena
+        this.sonidovictory = this.sound.add('sonidovictory');
         // Detectar si el jugador toca alguno de los enemigos para enviarlo al inicio del juego
-        var colisionEnemigo = this.physics.add.overlap(this.groupEnemies, this.player,  function (){
+        var colisionEnemigo = this.physics.add.overlap(this.groupEnemies, this.player, function () {
+            this.sonidocolisionEnemigo.play();
             //GBW   Se incluyó la verificación de fin de juego para mostrar Game Over
             this.verificarContinuaJuego();
         }, null, this);
@@ -95,6 +112,7 @@ class MainScene extends Phaser.Scene
                 //GBW   Se incluyo función para destruir las setas y aumentar el contador de Score
                 this.physics.add.overlap(seta, this.player, function (seta){
                     seta.destroy();
+                    this.sonidoseta.play();
                     this.score = this.score + 1;
                 }, null, this);
             }
@@ -180,6 +198,7 @@ class MainScene extends Phaser.Scene
 
         //Imagen de finalización del juego
         this.victory = this.add.image(400, 200, 'victory');
+        this.sonidovictory.play();
         this.victory.visible = false;
         this.victory.setScrollFactor(0);
 
@@ -198,7 +217,7 @@ class MainScene extends Phaser.Scene
         this.spacebar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
         //Agregando de sonido de salto a la escena
         this.sonidoSalto = this.sound.add('sonidoSalto');
-        
+
 
         // GBW Fin
     }
@@ -232,7 +251,8 @@ class MainScene extends Phaser.Scene
         this.gameOverText.visible = true;
         this.clickToPlayAgainText.visible = true;
         this.physics.pause();
-        this.input.on('pointerdown', ()=> this.scene.start('mainscene'));
+        this.input.on('pointerdown', () => this.scene.start('mainscene'));
+        this.sonidogameOver.play();
         this.sonidoFondo.stop();
     }
 

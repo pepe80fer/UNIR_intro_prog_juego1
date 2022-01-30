@@ -88,7 +88,7 @@ class MainScene extends Phaser.Scene
         this.sonidovictory = this.sound.add('sonidovictory');
         // Detectar si el jugador toca alguno de los enemigos para enviarlo al inicio del juego
         var colisionEnemigo = this.physics.add.overlap(this.groupEnemies, this.player, function () {
-            this.sonidocolisionEnemigo.play();
+         
             //GBW   Se incluyó la verificación de fin de juego para mostrar Game Over
             this.verificarContinuaJuego();
         }, null, this);
@@ -198,7 +198,7 @@ class MainScene extends Phaser.Scene
 
         //Imagen de finalización del juego
         this.victory = this.add.image(400, 200, 'victory');
-        this.sonidovictory.play();
+    
         this.victory.visible = false;
         this.victory.setScrollFactor(0);
 
@@ -236,7 +236,7 @@ class MainScene extends Phaser.Scene
 
     //Método para finalizar el juego cuando se llega al portal
     FinalizarJuego() {
-
+        this.sonidovictory.play();
         this.victory.visible = true;
         this.scoreFinalText.visible = true;
         this.clickToPlayAgainText.visible = true;
@@ -265,7 +265,7 @@ class MainScene extends Phaser.Scene
                 this.invulnerabilidadJugador = true;
                 //this.playerToStart();
                 this.vidasJugador--;
-
+                this.sonidocolisionEnemigo.play();
                 this.validarVidas();
                 this.visibilityCounter = 0;
                 this.efectoInvulnerabilidad();
@@ -302,7 +302,7 @@ anadirVida(){
         this.validarVidas();
     
     }
-  
+    this.sonidoseta.play();
 }
 
 

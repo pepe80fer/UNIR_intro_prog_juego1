@@ -24,6 +24,7 @@ class MainScene extends Phaser.Scene
         this.load.audio('musicaFondo', 'res/assets/Background.mp3');
         this.load.image('portal', 'res/assets/portal.png');
         this.load.image('victory', 'res/assets/Victory.png');
+        //Carga delo sonido de salto a la escena
         this.load.audio('sonidoSalto', 'res/assets/Jump.mp3');
         // GBW Fin
 
@@ -169,7 +170,9 @@ class MainScene extends Phaser.Scene
         this.scoreFinalText.visible = false;
         this.scoreFinalText.setScrollFactor(0);
 
+        //Inclusión de captura de evento cuando se presiona la tecla ESPACIO
         this.spacebar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+        //Agregando de sonido de salto a la escena
         this.sonidoSalto = this.sound.add('sonidoSalto');
         
 
@@ -293,9 +296,7 @@ anadirVida(){
         this.scoreText.setText('SCORE: ' + this.score);
         this.scoreFinalText.setText('SCORE: ' + this.score);
 
-        //let cursors = this.input.keyboard.createCursorKeys();        
-
-
+        //Lógica para que suene el sonido de salto cuando se presiona ESPACIO
         if (Phaser.Input.Keyboard.JustDown(this.spacebar))
         {
             if(this.player.body.onFloor()){

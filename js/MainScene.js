@@ -1,5 +1,9 @@
 class MainScene extends Phaser.Scene
 {
+    constructor(){
+        super('mainscene')
+    }
+
     preload()
     {
         this.load.image('tiles','res/Tileset.png');
@@ -17,6 +21,8 @@ class MainScene extends Phaser.Scene
 
         // GBW 20220128 Inicio
         this.load.audio('musicaFondo', 'res/assets/Background.mp3');
+        this.load.image('portal', 'res/assets/portal.png');
+        this.load.image('victory', 'res/assets/Victory.png');
         // GBW Fin
           
     }
@@ -44,24 +50,6 @@ class MainScene extends Phaser.Scene
         this.cameras.main.startFollow(this.player);
         this.cameras.main.setBounds(0,0,map.widthInPixels,map.heightInPixels);
 
-        this.objetos = map.getObjectLayer('objetos')['objects'];
-        this.setas = [];
-        for(var i = 0; i < this.objetos.length; ++i)
-        {
-            var obj = this.objetos[i];
-            if(obj.gid == 115) // en mi caso la seta
-            {
-                var seta = new Seta(this,obj.x,obj.y);
-                this.setas.push(seta);
-                //GBW Inicio
-                this.physics.add.overlap(seta, this.player, function (seta, scoreText){
-                    seta.destroy();
-                    this.score = this.score + 1;
-                //GBW Fin
-                }, null, this);
-            }
-        }
-
         // Colisión solo con la parte izquierda del mundo
         this.physics.world.setBoundsCollision(true, false, false, false);
         // El jugador colisiona contra los límites del mundo (parte izquierda definida)
@@ -72,46 +60,131 @@ class MainScene extends Phaser.Scene
         // Crear los enemigos en el escenario
         this.createEnemies(layer);
         // Detectar si el jugador toca alguno de los enemigos para enviarlo al inicio del juego
-        this.physics.add.overlap(this.groupEnemies, this.player, this.playerToStart, null, this);
+        this.physics.add.overlap(this.groupEnemies, this.player,  function (){
+            //GBW   Se incluyó la verificación de fin de juego para mostrar Game Over
+            this.verificarContinuaJuego();
+        }, null, this);
 
+        this.vidasJugador = 0;
         this.score = 0;
 
         //GBW Inicio
+        this.objetos = map.getObjectLayer('objetos')['objects'];
+        this.setas = [];
+        for(var i = 0; i < this.objetos.length; ++i)
+        {
+            var obj = this.objetos[i];
+            if(obj.gid == 115)
+            {
+                var seta = new Seta(this,obj.x,obj.y);
+                this.setas.push(seta);
+                //GBW   Se incluyo función para destruir las setas y aumentar el contador de Score
+                this.physics.add.overlap(seta, this.player, function (seta){
+                    seta.destroy();
+                    this.score = this.score + 1;
+                }, null, this);
+            }
+        } 
 
+        //Creación del texto de Score
         this.scoreText = this.add.text(16, 16, 'SCORE: '+ this.score, { 
             fontSize: '20px', 
             fill: '#000', 
             fontFamily: 'verdana, arial, sans-serif' 
           });
+        //Establecer unbicaciónm fija de línea de texto de Score.
         this.scoreText.setScrollFactor(0);
+    
+        //Creación del texto de Game Over
+        this.gameOverText = this.add.text(400, 250, 'GAME OVER', { 
+            fontSize: '70px', 
+            fill: '#fff', 
+            fontFamily: 'verdana, arial, sans-serif' 
+          });
+        this.gameOverText.setOrigin(0.5);
+        this.gameOverText.setShadow(-5, 5, '#000', 0);
+        this.gameOverText.visible = false;
+        this.gameOverText.setScrollFactor(0);
 
-        let sonidoFondo = this.sound.add('musicaFondo');
-        sonidoFondo.play();
+        //Creación del texto para reiniciar el juego
+        this.clickToPlayAgainText = this.add.text(400, 450, 'Click To Play Again', { 
+            fontSize: '20px', 
+            fill: '#fff', 
+            fontFamily: 'verdana, arial, sans-serif' 
+          });
+        this.clickToPlayAgainText.setOrigin(0.5);
+        this.clickToPlayAgainText.setShadow(-3, 3, '#000', 0);
+        this.clickToPlayAgainText.visible = false;
+        this.clickToPlayAgainText.setScrollFactor(0); 
+
+        //Inclusión de sonido de fondo 'Background.mp3'.
+        this.sonidoFondo = this.sound.add('musicaFondo');
+        this.sonidoFondo.loop = true;
+        this.sonidoFondo.play();
+
+        //Creación del portal final para finalizar el juego
+        this.portal = this.createPortal(this, layer, 6350, 169);
+        this.physics.add.overlap(this.portal, this.player,  function (){
+            this.FinalizarJuego();
+        }, null, this);
+
+        //Imagen de finalización del juego
+        this.victory = this.add.image(400, 200, 'victory');
+        this.victory.visible = false;
+        this.victory.setScrollFactor(0);
+
+        //Creación del texto para mostrar Score final del juego
+        this.scoreFinalText = this.add.text(400, 400, 'SCORE: '+ this.score, { 
+            fontSize: '30px', 
+            fill: '#fff', 
+            fontFamily: 'verdana, arial, sans-serif' 
+          });
+        this.scoreFinalText.setOrigin(0.5);
+        this.scoreFinalText.setShadow(-3, 3, '#000', 0);
+        this.scoreFinalText.visible = false;
+        this.scoreFinalText.setScrollFactor(0);
 
         // GBW Fin
     }
 
-    zeroPad(number, size){
-        var stringNumber = String(number);
-        while(stringNumber.length < (size || 2)){
-          stringNumber = '0' + stringNumber;
-        }
-        return stringNumber;
+    //GBW Inicio
+    //Método para crear el portal final
+    createPortal(scene, layer, x, y) {
+        var portal = new Portal(scene, x, y, 'portal');
+        this.physics.add.collider(portal, layer);
+        return portal;
     }
 
-    /*createSetas(layer) {
-        
-        Setas = this.physics.add.group({
-            key:'seta',
-            repeat: 10,
-            setXY: { x:12, y:0, setpX:40 }
-        });
+    //Método para finalizar el juego cuando se llega al portal
+    FinalizarJuego() {
 
-        Setas.children.iterate((child) => {
-            child.setBounceY(Phaser.Math.FloatBetween(0.4,0.8));
-        });
-    }*/
+        this.victory.visible = true;
+        this.scoreFinalText.visible = true;
+        this.clickToPlayAgainText.visible = true;
+        this.physics.pause();
+        this.input.on('pointerdown', ()=> this.scene.start('mainscene'));
+        this.sonidoFondo.stop();
+    }
 
+    //Método para mostrar Game Over cuando se toca un enemigo o se cae teniendo cero vidas
+    GameOver() {
+
+        this.gameOverText.visible = true;
+        this.clickToPlayAgainText.visible = true;
+        this.physics.pause();
+        this.input.on('pointerdown', ()=> this.scene.start('mainscene'));
+        this.sonidoFondo.stop();
+    }
+
+    //Método para verificar si se reinicia el juego o es Game Over dependiendo de la cantidad de vidas restantes
+    verificarContinuaJuego(){
+
+        if(this.vidasJugador > 0)
+            this.playerToStart();
+        else
+            this.GameOver();
+    }
+    // GBW Fin
 
     spriteHit (sprite1, sprite2) {
         sprite1.destroy();
@@ -122,22 +195,16 @@ class MainScene extends Phaser.Scene
         this.player.update(time,delta);
         this.updateEnemies();
 
-        //GBW Inicio
+        //GBW   Se actualizar el score cada vez que coge una seta
         this.scoreText.setText('SCORE: ' + this.score);
-        //GBW Fin
+        this.scoreFinalText.setText('SCORE: ' + this.score);
+        //GBW
 
-        // Validar si el jugador sale del escenario por la parte infierior
+        // Validar si el jugador sale del escenario por la parte inferior
         if (this.player.validarCaidaPlayer(config.height, this.player.y)) {
             // Mover el jugador a las coordenadas iniciales del juego
-            this.playerToStart();
+            this.verificarContinuaJuego();
         }
-    }
-
-    coleccionarSeta(player, seta){
-        seta.disableBody(true,true);
-
-        this.score += 1;
-        
     }
 
     /**

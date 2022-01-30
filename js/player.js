@@ -10,7 +10,6 @@ class Player extends Phaser.Physics.Arcade.Sprite
         this.body.offset.y = 15;
         //continuación
         this.cursor = this.scene.input.keyboard.createCursorKeys();
-       
 
         this.anims.create({
             key: 'walk',

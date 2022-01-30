@@ -1,5 +1,6 @@
 class MainScene extends Phaser.Scene
 {
+
     constructor(){
         super('mainscene')
     }
@@ -24,6 +25,9 @@ class MainScene extends Phaser.Scene
         this.load.image('portal', 'res/assets/portal.png');
         this.load.image('victory', 'res/assets/Victory.png');
         // GBW Fin
+
+        this.load.image('livesPic', 'res/heart.png');
+
           
     }
 
@@ -71,7 +75,10 @@ class MainScene extends Phaser.Scene
             this.verificarContinuaJuego();
         }, null, this);
 
-        this.vidasJugador = 0;
+        this.vidasJugador = 3;
+        this.invulnerabilidadJugador = false;
+        this.isVisible = false;
+        this.visibilityCounter = 0;
         this.score = 0;
 
         //GBW Inicio
@@ -91,6 +98,17 @@ class MainScene extends Phaser.Scene
                 }, null, this);
             }
         } 
+
+        //Creación de imágenes de vidas
+        this.vida1 = this.add.image(750,30,'livesPic');
+        this.vida1.setScale(0.1);
+        this.vida1.setScrollFactor(0);
+        this.vida2 = this.add.image(720,30,'livesPic');
+        this.vida2.setScale(0.1);
+        this.vida2.setScrollFactor(0);
+        this.vida3 = this.add.image(690,30,'livesPic');
+        this.vida3.setScale(0.1);
+        this.vida3.setScrollFactor(0);
 
         //Creación del texto de Score
         this.scoreText = this.add.text(16, 16, 'SCORE: '+ this.score, { 
@@ -184,12 +202,42 @@ class MainScene extends Phaser.Scene
 
     //Método para verificar si se reinicia el juego o es Game Over dependiendo de la cantidad de vidas restantes
     verificarContinuaJuego(){
+        if(!this.invulnerabilidadJugador){
+            if(this.vidasJugador > 0)
+            {
+                this.playerToStart();
+                this.vidasJugador--;
+                if(this.vidasJugador==2){
+                    this.vida1.visible = false;
+                }else if(this.vidasJugador==1){
+                    this.vida2.visible = false;
+                }else if(this.vidasJugador==0){
+                    this.vida3.visible = false;
+                }
+                //this.player.alpha = 0.1;
+                //this.invulnerabilidadJugador = true;
 
-        if(this.vidasJugador > 0)
-            this.playerToStart();
-        else
-            this.GameOver();
+            }
+            else
+                this.GameOver();
+        }
+        
     }
+    
+    efectoInvulnerabilidad(){
+        if(this.visible){
+            this.player.alpha = 1;
+            this.visible = true;
+        }else{
+            this.player.alpha = 0.1;
+            this.visible = false;
+        }
+        this.visibilityCounter++;
+        if(this.visibilityCounter >= 7){
+            this.invulnerabilidadJugador = false;
+        }
+    }
+
     // GBW Fin
 
     spriteHit (sprite1, sprite2) {

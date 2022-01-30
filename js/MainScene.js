@@ -63,21 +63,21 @@ class MainScene extends Phaser.Scene
         this.fall = this.physics.add.sprite(0, 479, 'fall');
         this.fall.setCollideWorldBounds(true);
 
-        this.physics.add.overlap(this.fall, this.player, () => this.verificarContinuaJuego(), null, this);
+        this.physics.add.overlap(this.fall, this.player, () => this.GameOver(), null, this);
         
         // Se crea un grupo de físicas para los enemigos
         this.groupEnemies = this.physics.add.group();
         // Crear los enemigos en el escenario
         this.createEnemies(layer);
         // Detectar si el jugador toca alguno de los enemigos para enviarlo al inicio del juego
-        this.physics.add.overlap(this.groupEnemies, this.player,  function (){
+        var colisionEnemigo = this.physics.add.overlap(this.groupEnemies, this.player,  function (){
             //GBW   Se incluyó la verificación de fin de juego para mostrar Game Over
             this.verificarContinuaJuego();
         }, null, this);
 
-        this.vidasJugador = 3;
+        this.vidasJugador = 1;
         this.invulnerabilidadJugador = false;
-        this.isVisible = false;
+        this.isVisible = true;
         this.visibilityCounter = 0;
         this.score = 0;
 
@@ -95,6 +95,7 @@ class MainScene extends Phaser.Scene
                 this.physics.add.overlap(seta, this.player, function (seta){
                     seta.destroy();
                     this.score = this.score + 1;
+                    this.anadirVida();
                 }, null, this);
             }
         } 
@@ -203,19 +204,18 @@ class MainScene extends Phaser.Scene
     //Método para verificar si se reinicia el juego o es Game Over dependiendo de la cantidad de vidas restantes
     verificarContinuaJuego(){
         if(!this.invulnerabilidadJugador){
-            if(this.vidasJugador > 0)
+
+            if(this.vidasJugador > 0 && !this.invulnerabilidadJugador)
             {
-                this.playerToStart();
+                this.invulnerabilidadJugador = true;
+
+                //this.playerToStart();
                 this.vidasJugador--;
-                if(this.vidasJugador==2){
-                    this.vida1.visible = false;
-                }else if(this.vidasJugador==1){
-                    this.vida2.visible = false;
-                }else if(this.vidasJugador==0){
-                    this.vida3.visible = false;
-                }
-                //this.player.alpha = 0.1;
-                //this.invulnerabilidadJugador = true;
+
+                this.validarVidas();
+                this.visibilityCounter = 0;
+                this.efectoInvulnerabilidad();
+
 
             }
             else
@@ -224,8 +224,40 @@ class MainScene extends Phaser.Scene
         
     }
     
+validarVidas(){
+    if(this.vidasJugador==3){
+        this.vida1.visible = true;
+        this.vida2.visible = true;
+        this.vida3.visible = true;
+    }else if(this.vidasJugador==2){
+        this.vida1.visible = false;
+        this.vida2.visible = true;
+        this.vida3.visible = true;
+    }else if(this.vidasJugador==1){
+        this.vida1.visible = false;
+        this.vida2.visible = false;
+        this.vida3.visible = true;
+    }else if(this.vidasJugador==0){
+        this.vida1.visible = false;
+        this.vida2.visible = false;
+        this.vida3.visible = false;
+    }
+}
+
+anadirVida(){
+    if(this.vidasJugador<3){
+
+    }
+    this.vidasJugador++;
+    this.validarVidas();
+
+}
+
+
     efectoInvulnerabilidad(){
-        if(this.visible){
+        this.invulnerabilidadJugador = true;
+
+        if(!this.visible){
             this.player.alpha = 1;
             this.visible = true;
         }else{
@@ -233,8 +265,13 @@ class MainScene extends Phaser.Scene
             this.visible = false;
         }
         this.visibilityCounter++;
-        if(this.visibilityCounter >= 7){
+        if(this.visibilityCounter >= 10){
+            this.player.alpha = 1;
             this.invulnerabilidadJugador = false;
+        }else{
+            setTimeout(() => {
+                this.efectoInvulnerabilidad();
+            }, 100);
         }
     }
 
@@ -246,6 +283,8 @@ class MainScene extends Phaser.Scene
 
     update (time, delta)
     {
+        this.validarVidas();
+
         this.player.update(time,delta);
         this.updateEnemies();
 

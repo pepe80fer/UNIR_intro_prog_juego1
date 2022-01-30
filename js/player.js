@@ -56,7 +56,7 @@ class Player extends Phaser.Physics.Arcade.Sprite
 
         if (this.cursor.space.isDown && this.body.onFloor()) {
             
-            this.setVelocityY(-200);
+            this.setVelocityY(-300);
         }
 
 

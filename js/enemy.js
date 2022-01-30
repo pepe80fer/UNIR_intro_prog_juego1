@@ -29,6 +29,11 @@ class Enemy extends Phaser.Physics.Arcade.Sprite
             frameRate: 16,
             repeat: -1
         });
+
+        this.body.setSize(30, 25);
+        this.body.offset.y = 15;
+        this.body.offset.x = 20;
+
     }
 
     update()
@@ -54,9 +59,12 @@ class Enemy extends Phaser.Physics.Arcade.Sprite
         if (this.x >= this.endRight) {
             this.setVelocityX(this.generarValorVelocidad() * -1);
             this.setFlipX(true); 
+            this.body.offset.x = 3;
+
         } else if (this.x <= this.endLeft) {
             this.setVelocityX(this.generarValorVelocidad());
             this.setFlipX(false); 
+            this.body.offset.x = 20;
         }
     }
 }

@@ -55,7 +55,7 @@ class MainScene extends Phaser.Scene
         var layer3 = map.createLayer('Detalles', tiles, 0, 0);
         var layer2 = map.createLayer('Fondo', tiles, 0, 0);
         var layer = map.createLayer('Suelo', tiles, 0, 0);
-        this.player = new Player(this, 60, 60);
+        this.player = new Player(this, 60,  60);
 
         //enable collisions for every tile
         layer.setCollisionByExclusion(-1,true);
@@ -114,7 +114,6 @@ class MainScene extends Phaser.Scene
                     seta.destroy();
                     this.sonidoseta.play();
                     this.score = this.score + 1;
-                    this.anadirVida();
                 }, null, this);
             }
         } 
@@ -129,6 +128,31 @@ class MainScene extends Phaser.Scene
         this.vida3 = this.add.image(690,30,'livesPic');
         this.vida3.setScale(0.1);
         this.vida3.setScrollFactor(0);
+
+        // this.vidaNivel1 = this.add.sprite(370,140,'livesPic');
+        this.vidaNivel1 = this.createExtraLife(this, layer, 370, 140);
+        this.vidaNivel1.setScale(0.1);
+        this.physics.add.overlap(this.vidaNivel1, this.player,  function (){
+            this.anadirVida();
+            this.vidaNivel1.destroy();
+        }, null, this);
+        this.vidaNivel1.body.setAllowGravity(false)
+
+        this.vidaNivel2 = this.createExtraLife(this, layer, 3670, 250);
+        this.vidaNivel2.setScale(0.1);
+        this.physics.add.overlap(this.vidaNivel2, this.player,  function (){
+            this.anadirVida();
+            this.vidaNivel2.destroy();
+        }, null, this);
+        this.vidaNivel2.body.setAllowGravity(false)
+
+        this.vidaNivel3 = this.createExtraLife(this, layer, 4540, 433);
+        this.vidaNivel3.setScale(0.1);
+        this.physics.add.overlap(this.vidaNivel3, this.player,  function (){
+            this.anadirVida();
+            this.vidaNivel3.destroy();
+        }, null, this);
+        this.vidaNivel3.body.setAllowGravity(false)
 
         //Creación del texto de Score
         this.scoreText = this.add.text(16, 16, 'SCORE: '+ this.score, { 
@@ -197,7 +221,11 @@ class MainScene extends Phaser.Scene
 
         // GBW Fin
     }
-
+    createExtraLife(scene, layer, x, y) {
+        var extraLife = new Portal(scene, x, y, 'livesPic');
+        this.physics.add.collider(extraLife, layer);
+        return extraLife;
+    }
     //GBW Inicio
     //Método para crear el portal final
     createPortal(scene, layer, x, y) {
@@ -270,11 +298,11 @@ validarVidas(){
 
 anadirVida(){
     if(this.vidasJugador<3){
-
+        this.vidasJugador++;
+        this.validarVidas();
+    
     }
-    this.vidasJugador++;
-    this.validarVidas();
-
+  
 }
 
 

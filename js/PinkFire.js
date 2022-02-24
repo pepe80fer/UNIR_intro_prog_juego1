@@ -22,7 +22,7 @@ class PinkFire extends Phaser.Physics.Arcade.Sprite
             key: 'fire',
             frames: this.scene.anims.generateFrameNames('sprites_pinkfire', { start: 1, end: 6, prefix: 'fire-' }),
             frameRate: 16,
-            repeat: 1
+            repeat: -1
         });
     }
 

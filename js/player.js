@@ -1,5 +1,7 @@
 class Player extends Phaser.Physics.Arcade.Sprite
 {
+    flipX = false;
+
     constructor(scene,x,y)
     {
         super(scene,x,y,'player');
@@ -14,7 +16,7 @@ class Player extends Phaser.Physics.Arcade.Sprite
         this.anims.create({
             key: 'walk',
             frames: this.scene.anims.generateFrameNames('sprites_jugador', { start: 1, end: 18, prefix: 'walk-' }),
-            frameRate: 10,
+            frameRate: 32,
             repeat: -1
         });
         this.anims.create({
@@ -30,8 +32,13 @@ class Player extends Phaser.Physics.Arcade.Sprite
             frameRate: 8,
             repeat: -1
         });
-        
-        
+
+        this.anims.create({
+            key: 'fire',
+            frames: this.scene.anims.generateFrameNames('sprites_pinkfire', { start: 1, end: 4, prefix: 'fire-' }),
+            frameRate: 8,
+            repeat: -1
+        });
     }
 
     update(time,delta)
@@ -39,13 +46,14 @@ class Player extends Phaser.Physics.Arcade.Sprite
         if(this.cursor.left.isDown)
         {
             this.setVelocityX(-200);
-            
-            this.setFlipX(true); 
+            this.flipX = true;
+            this.setFlipX(this.flipX); 
         }
         else if(this.cursor.right.isDown)
         {
             this.setVelocityX(200);
-            this.setFlipX(false); 
+            this.flipX = false;
+            this.setFlipX(this.flipX);
         }
         else
         {
@@ -75,5 +83,9 @@ class Player extends Phaser.Physics.Arcade.Sprite
      */
     validarCaidaPlayer(height, y) {
         return (y >= height + 50);
+    }
+
+    getFlipX() {
+        return this.flipX;
     }
 }

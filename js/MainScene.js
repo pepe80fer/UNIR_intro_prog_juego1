@@ -17,6 +17,8 @@ class MainScene extends Phaser.Scene
         // https://gammafp.com/tool/atlas-packer/
         this.load.atlas('sprites_jugador','res/player_anim/player_anim.png', 'res/player_anim/player_anim_atlas.json');
         this.load.atlas('sprites_enemy','res/worm/worm_walk.png', 'res/worm/worm_walk_atlas.json');
+        this.load.atlas('sprites_pinkfire','res/pinkfire/pinkfire.png', 'res/pinkfire/pinkfire_atlas.json');
+        this.load.atlas('sprites_fire_col','res/fire_col/fire_col.png', 'res/fire_col/fire_col_atlas.json');
         this.load.spritesheet('tilesSprites','res/Tileset.png',
         { frameWidth: 32, frameHeight: 32 });
 
@@ -54,12 +56,12 @@ class MainScene extends Phaser.Scene
         var layer4 = map.createLayer('Detalles2', tiles, 0, 0);
         var layer3 = map.createLayer('Detalles', tiles, 0, 0);
         var layer2 = map.createLayer('Fondo', tiles, 0, 0);
-        var layer = map.createLayer('Suelo', tiles, 0, 0);
+        this.layer = map.createLayer('Suelo', tiles, 0, 0);
         this.player = new Player(this, 60,  60);
 
         //enable collisions for every tile
-        layer.setCollisionByExclusion(-1,true);
-        this.physics.add.collider(this.player,layer);
+        this.layer.setCollisionByExclusion(-1,true);
+        this.physics.add.collider(this.player, this.layer);
         this.cameras.main.startFollow(this.player);
         this.cameras.main.setBounds(0,0,map.widthInPixels,map.heightInPixels);
 
@@ -77,7 +79,7 @@ class MainScene extends Phaser.Scene
         // Se crea un grupo de físicas para los enemigos
         this.groupEnemies = this.physics.add.group();
         // Crear los enemigos en el escenario
-        this.createEnemies(layer);
+        this.createEnemies(map.getObjectLayer('enemigos')['objects']);
          //Agregando del sonido de golpe o dano a la escena
         this.sonidocolisionEnemigo = this.sound.add('sonidocolisionEnemigo');
          //Agregando del sonido de agarrar setas a la escena
@@ -88,7 +90,6 @@ class MainScene extends Phaser.Scene
         this.sonidovictory = this.sound.add('sonidovictory');
         // Detectar si el jugador toca alguno de los enemigos para enviarlo al inicio del juego
         var colisionEnemigo = this.physics.add.overlap(this.groupEnemies, this.player, function () {
-         
             //GBW   Se incluyó la verificación de fin de juego para mostrar Game Over
             this.verificarContinuaJuego();
         }, null, this);
@@ -116,7 +117,7 @@ class MainScene extends Phaser.Scene
                     this.score = this.score + 1;
                 }, null, this);
             }
-        } 
+        }
 
         //Creación de imágenes de vidas
         this.vida1 = this.add.image(750,30,'livesPic');
@@ -130,7 +131,7 @@ class MainScene extends Phaser.Scene
         this.vida3.setScrollFactor(0);
 
         // this.vidaNivel1 = this.add.sprite(370,140,'livesPic');
-        this.vidaNivel1 = this.createExtraLife(this, layer, 370, 140);
+        this.vidaNivel1 = this.createExtraLife(this, this.layer, 370, 140);
         this.vidaNivel1.setScale(0.1);
         this.physics.add.overlap(this.vidaNivel1, this.player,  function (){
             this.anadirVida();
@@ -138,7 +139,7 @@ class MainScene extends Phaser.Scene
         }, null, this);
         this.vidaNivel1.body.setAllowGravity(false)
 
-        this.vidaNivel2 = this.createExtraLife(this, layer, 3670, 250);
+        this.vidaNivel2 = this.createExtraLife(this, this.layer, 3670, 250);
         this.vidaNivel2.setScale(0.1);
         this.physics.add.overlap(this.vidaNivel2, this.player,  function (){
             this.anadirVida();
@@ -146,7 +147,7 @@ class MainScene extends Phaser.Scene
         }, null, this);
         this.vidaNivel2.body.setAllowGravity(false)
 
-        this.vidaNivel3 = this.createExtraLife(this, layer, 4540, 433);
+        this.vidaNivel3 = this.createExtraLife(this, this.layer, 4540, 433);
         this.vidaNivel3.setScale(0.1);
         this.physics.add.overlap(this.vidaNivel3, this.player,  function (){
             this.anadirVida();
@@ -191,7 +192,7 @@ class MainScene extends Phaser.Scene
         this.sonidoFondo.play();
 
         //Creación del portal final para finalizar el juego
-        this.portal = this.createPortal(this, layer, 6350, 169);
+        this.portal = this.createPortal(this, this.layer, 6350, 169);
         this.physics.add.overlap(this.portal, this.player,  function (){
             this.FinalizarJuego();
         }, null, this);
@@ -220,6 +221,12 @@ class MainScene extends Phaser.Scene
 
 
         // GBW Fin
+
+        // El player lanza poder de fuego
+        this.setFirePlayer();
+
+        // Bolas de fuego
+        this.setFireBall();
     }
     createExtraLife(scene, layer, x, y) {
         var extraLife = new Portal(scene, x, y, 'livesPic');
@@ -247,7 +254,6 @@ class MainScene extends Phaser.Scene
 
     //Método para mostrar Game Over cuando se toca un enemigo o se cae teniendo cero vidas
     GameOver() {
-
         this.gameOverText.visible = true;
         this.clickToPlayAgainText.visible = true;
         this.physics.pause();
@@ -338,7 +344,10 @@ anadirVida(){
         this.validarVidas();
 
         this.player.update(time,delta);
-        this.updateEnemies();
+        
+        // Llamar la función update de cada enemigo creado
+        for (let enemy of this.enemies)
+            enemy.update();
 
         //GBW   Se actualizar el score cada vez que coge una seta
         this.scoreText.setText('SCORE: ' + this.score);
@@ -363,35 +372,26 @@ anadirVida(){
     playerToStart() {
         this.player.y = 60;
         this.player.x = 60;
-
-        /* ################################################### */
-        /* Aqui se puede implementar el descuento de las vidas */
-        /* ################################################### */
     }
 
     /**
      * Crear los enemigos por todo el escenario
      * @param {layer} layer Suelo
      */
-    createEnemies(layer) {
-        this.enemy1 = this.createEnemy(this, layer, 60, 361, 60, 240, 15, 5);
-        this.enemy2 = this.createEnemy(this, layer, 850, 105, 860, 1100, 15, 5);
-        this.enemy3 = this.createEnemy(this, layer, 1110, 361, 860, 1100, 15, 5);
-        this.enemy4 = this.createEnemy(this, layer, 1280, 425, 1281, 1510, 15, 5);
-        this.enemy5 = this.createEnemy(this, layer, 1600, 169, 1341, 1600, 15, 5);
-        this.enemy6 = this.createEnemy(this, layer, 1920, 329, 1921, 2330, 15, 5);
-        this.enemy7 = this.createEnemy(this, layer, 2335, 329, 1921, 2330, 15, 5);
-        this.enemy8 = this.createEnemy(this, layer, 2335, 329, 1921, 2330, 18, 9);
-        this.enemy9 = this.createEnemy(this, layer, 2875, 265, 2876, 2980, 10, 5);
-        this.enemy10 = this.createEnemy(this, layer, 2875, 41, 2876, 2980, 10, 5);
-        this.enemy11 = this.createEnemy(this, layer, 4035, 361, 3741, 4035, 15, 10);
-        this.enemy12 = this.createEnemy(this, layer, 3740, 361, 3741, 4035, 15, 10);
-        this.enemy13 = this.createEnemy(this, layer, 4780, 425, 4281, 4780, 15, 10);
-        this.enemy14 = this.createEnemy(this, layer, 4280, 425, 4281, 4780, 15, 10);
-        this.enemy15 = this.createEnemy(this, layer, 4280, 425, 4281, 4780, 10, 5);
-        this.enemy16 = this.createEnemy(this, layer, 5470, 425, 5471, 5920, 20, 15);
-        this.enemy17 = this.createEnemy(this, layer, 5470, 425, 5471, 5920, 20, 15);
-        this.enemy18 = this.createEnemy(this, layer, 6300, 169, 6001, 6300, 18, 12);
+    createEnemies(enemigos) {
+        this.enemies = [];
+        for(var i = 0; i < enemigos.length; ++i)
+        {
+            var obj = enemigos[i];
+            let enemy = this.createEnemy(this, this.layer, 
+                obj.x, 
+                obj.y, 
+                obj.properties[0].value, 
+                obj.properties[1].value, 
+                obj.properties[2].value, 
+                obj.properties[3].value);
+            this.enemies.push(enemy);
+        }
     }
 
     /**
@@ -417,26 +417,45 @@ anadirVida(){
     }
 
     /**
-     * Llamar la función update de cada enemigo creado
+     * Detectar cuando la tecla F es pulsada
+     * Crear un nuevo sprite de fuego y añadirla a la scena en la poisión en la que se encuentra el player
+     * Destruir fuego y enemigo cuando estos colisionan
+     * Destruir fuego si este toca el layer
      */
-    updateEnemies() {
-        this.enemy1.update();
-        this.enemy2.update();
-        this.enemy3.update();
-        this.enemy4.update();
-        this.enemy5.update();
-        this.enemy6.update();
-        this.enemy7.update();
-        this.enemy8.update();
-        this.enemy9.update();
-        this.enemy10.update();
-        this.enemy11.update();
-        this.enemy12.update();
-        this.enemy13.update();
-        this.enemy14.update();
-        this.enemy15.update();
-        this.enemy16.update();
-        this.enemy17.update();
-        this.enemy18.update();
+    setFirePlayer() {
+        this.input.keyboard.on('keydown-F', () => {
+            const f = new PinkFire(this, this.player.x + 10, this.player.y + 10, 'pinkfire', this.player.getFlipX());
+            this.physics.add.overlap(f, this.groupEnemies, function (fire, enemy) {
+                f.destroy();
+                enemy.disableBody(true, true);
+            });
+            this.physics.add.collider(f, this.layer, () => {
+                f.destroy();
+            });
+            f.update();
+        });
     }
+
+    setFireBall() {
+        const num = Math.floor(Math.random() * 2) + 1;
+        let ball = new EnemyFire(this, this.player.x + 80 * num, -50, 'fire_col');
+        ball.setSize(25, 50, false);
+        this.physics.add.collider(ball, this.layer, () => {
+            ball.fireOff();
+            setTimeout(() => {
+                ball.destroy();
+            }, 300);
+        });
+        this.physics.add.collider(ball, this.player, () => {
+            ball.fireOff();
+            this.GameOver();
+            setTimeout(() => {
+                ball.destroy();
+            }, 300);
+        });
+        if (ball)
+            ball.update();
+        this.time.delayedCall(1000 * num, this.setFireBall, [], this);
+    }
+
 }

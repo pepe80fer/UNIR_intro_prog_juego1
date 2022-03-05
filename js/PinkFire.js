@@ -15,6 +15,9 @@ class PinkFire extends Phaser.Physics.Arcade.Sprite
         this.scene.add.existing(this);
         this.scene.physics.add.existing(this);
         this.body.allowGravity = false;
+        this.shootPower = this.scene.sound.add('shootPower');
+        this.setActive(false);
+        this.setVisible(false);
         this.flipX = flipX;
         
 
@@ -28,12 +31,27 @@ class PinkFire extends Phaser.Physics.Arcade.Sprite
 
     update()
     {
-        this.setFlipX(this.flipX);
-        if (this.flipX) {
-            this.setVelocityX(-300);
-        } else {
-            this.setVelocityX(300);
-        }
         this.play('fire', true);
+    }
+
+    setPower(x, y, flipX) {
+            this.body.allowGravity = false;
+            this.flipX = flipX;
+            this.setFlipX(this.flipX);
+            this.setFlipX(this.flipX);
+            if (this.flipX) {
+                this.setVelocityX(-300);
+            } else {
+                this.setVelocityX(300);
+            }
+            this.setPosition(x + 10, y + 10);
+            this.setActive(true);
+            this.setVisible(true);
+            this.shootPower.play();
+    }
+
+    removePower() {
+        this.setActive(false);
+        this.setVisible(false);
     }
 }

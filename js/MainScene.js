@@ -37,6 +37,10 @@ class MainScene extends Phaser.Scene
         //Carga del sonido de victoria a la escena
         this.load.audio('sonidovictory', 'res/assets/ganar.mp3');
         // GBW Fin
+        // Carga el sonido de disparo (poder)
+        this.load.audio('shootPower', 'res/assets/shoot.mp3');
+        // Carga el sonido para la bola de fuego
+        this.load.audio('fireBallSound', 'res/assets/fireBall.mp3');
 
         this.load.image('livesPic', 'res/heart.png');
 
@@ -222,12 +226,20 @@ class MainScene extends Phaser.Scene
 
         // GBW Fin
 
-        // El player lanza poder de fuego
-        this.setFirePlayer();
+        // ***** El player lanza poder de fuego *****
+        this.groupPinkPower = this.physics.add.group();
+        this.createPinkFire(3);
+        this.currentPower = 0;
+        // Colisiones y contacto con los enemigos
+        this.setColliderPower();
 
-        // Bolas de fuego
-        this.setFireBall();
+        // ***** Bolas de fuego que caen del cielo*****
+        this.groupFireBalss = this.physics.add.group();
+        this.createFireBalls(1);
+        // Colisiones y contacto con el escenario y el jugador
+        this.setColliderFireBalls();
     }
+
     createExtraLife(scene, layer, x, y) {
         var extraLife = new Portal(scene, x, y, 'livesPic');
         this.physics.add.collider(extraLife, layer);
@@ -349,6 +361,16 @@ anadirVida(){
         for (let enemy of this.enemies)
             enemy.update();
 
+        // Llamar la función update de cada bola de fuego que cae
+        for (let ball of this.fireballs) {
+            ball.update(time, delta);
+        }
+
+        // Llamar la función update de cada poder que lanza el jugador
+        for (let ball of this.pinkPower) {
+            ball.update(time, delta);
+        }
+
         //GBW   Se actualizar el score cada vez que coge una seta
         this.scoreText.setText('SCORE: ' + this.score);
         this.scoreFinalText.setText('SCORE: ' + this.score);
@@ -416,46 +438,71 @@ anadirVida(){
         return enemy;
     }
 
+
+    createPinkFire(numPower) {
+        // Arreglo para los poderes
+        this.pinkPower = [];
+        // Agregar bolas de fuego al arreglo
+        for (let i=0; i < numPower; i++) {
+            const f = new PinkFire(this, 0, 0, 'pinkfire');
+            f.setSize(40, 15, false);
+            f.body.offset.y = 5; f.body.offset.x = 10;
+            this.pinkPower.push(f);
+            this.groupPinkPower.add(f);
+        }
+    }
+
+    setColliderPower() {
+        this.physics.add.collider(this.groupPinkPower, this.layer, (power) => {
+            power.removePower();
+        });
+        this.physics.add.overlap(this.groupPinkPower, this.groupEnemies, (power, enemy) => {
+            power.removePower();
+            enemy.disableBody(true, true);
+        });
+        this.setFirePlayer();
+    }
+
     /**
      * Detectar cuando la tecla F es pulsada
-     * Crear un nuevo sprite de fuego y añadirla a la scena en la poisión en la que se encuentra el player
-     * Destruir fuego y enemigo cuando estos colisionan
-     * Destruir fuego si este toca el layer
+     * Cuando el poder no está activo, lo utiliza y envia las coordenadas [x|y] para ubicarlo delante del personaje
      */
     setFirePlayer() {
         this.input.keyboard.on('keydown-F', () => {
-            const f = new PinkFire(this, this.player.x + 10, this.player.y + 10, 'pinkfire', this.player.getFlipX());
-            this.physics.add.overlap(f, this.groupEnemies, function (fire, enemy) {
-                f.destroy();
-                enemy.disableBody(true, true);
-            });
-            this.physics.add.collider(f, this.layer, () => {
-                f.destroy();
-            });
-            f.update();
+            if ( !this.pinkPower[this.currentPower].active) {
+                this.pinkPower[this.currentPower].setPower(this.player.x, this.player.y, this.player.getFlipX());
+                this.currentPower = (this.currentPower < this.pinkPower.length - 1) ? this.currentPower + 1 : 0;
+            }
         });
     }
 
-    setFireBall() {
-        const num = Math.floor(Math.random() * 2) + 1;
-        let ball = new EnemyFire(this, this.player.x + 80 * num, -50, 'fire_col');
-        ball.setSize(25, 50, false);
-        this.physics.add.collider(ball, this.layer, () => {
+    createFireBalls(numBalls) {
+        // Arreglo para las bolas de fuego
+        this.fireballs = [];
+        // Agregar bolas de fuego al arreglo
+        for (let i=0; i < numBalls; i++) {
+            const ball = (new EnemyFire(this, 0, 0, 'fire_col'));
+            ball.setSize(20, 50, false);
+            ball.body.offset.y = 40; ball.body.offset.x = 12;
+            ball.fireOn(this.player.x, -50, this.player.getFlipX());
+            this.fireballs.push(ball);
+            this.groupFireBalss.add(ball);
+        }
+    }
+
+    setColliderFireBalls() {
+        // Se arega la colisión entre el grupo de bolas de fuego y el entorno
+        this.physics.add.collider(this.groupFireBalss, this.layer, (ball)  => {
             ball.fireOff();
             setTimeout(() => {
-                ball.destroy();
+                ball.fireOn(this.player.x, -50, this.player.getFlipX());
             }, 300);
         });
-        this.physics.add.collider(ball, this.player, () => {
+        // Se agrega la colisión entre el grupo de bolas de fuego y el personaje
+        this.physics.add.collider(this.groupFireBalss, this.player, (p, ball)  => {
             ball.fireOff();
             this.GameOver();
-            setTimeout(() => {
-                ball.destroy();
-            }, 300);
         });
-        if (ball)
-            ball.update();
-        this.time.delayedCall(1000 * num, this.setFireBall, [], this);
     }
 
 }

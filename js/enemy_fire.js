@@ -13,6 +13,10 @@ class EnemyFire extends Phaser.Physics.Arcade.Sprite
         this.scene = scene;
         this.scene.add.existing(this);
         this.scene.physics.add.existing(this);
+        this.body.allowGravity = false;
+        this.speed = Phaser.Math.GetSpeed(350, 1);
+        this.fireBallSound = this.scene.sound.add('fireBallSound');
+
 
         this.anims.create({
             key: 'fireCol',
@@ -29,12 +33,44 @@ class EnemyFire extends Phaser.Physics.Arcade.Sprite
         });
     }
 
-    update()
+    update(time, delta)
     {
+        if (this.active) {
+            this.y += (this.speed * delta);
+            if (this.y > windows.height)
+            {
+                setTimeout(() => {
+                    this.fireOn(this.x, -50);
+                }, 300);
+            }
+        }
+    }
+
+    fireOn(x, y, flipX) {
+        const num = (Math.floor(Math.random() * 2) + 1);
+        const direction = flipX ? -60 : 60;
+        this.setPosition(x + direction * num, y);
         this.play('fireCol', true);
+        this.setActive(true);
+        this.setVisible(true);
+        this.fireBallSound.play();
     }
 
     fireOff() {
+        this.fireBallSound.stop();
         this.play('fireCol_off', true);
+        setTimeout(() => {
+            this.setActive(false);
+            this.setVisible(false);
+        }, 300);
+    }
+
+    positionInit(posX) {
+        this.fireOff();
+        setTimeout(() => {
+            this.x = posX + 80 * (Math.floor(Math.random() * 2) + 1);
+            this.y = 100;
+            this.fireOn();
+        }, 300);
     }
 }

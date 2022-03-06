@@ -14,7 +14,7 @@ class EnemyFire extends Phaser.Physics.Arcade.Sprite
         this.scene.add.existing(this);
         this.scene.physics.add.existing(this);
         this.body.allowGravity = false;
-        this.speed = Phaser.Math.GetSpeed(350, 1);
+        this.speed = Phaser.Math.GetSpeed(1, 1);
         this.fireBallSound = this.scene.sound.add('fireBallSound');
 
 
@@ -48,7 +48,7 @@ class EnemyFire extends Phaser.Physics.Arcade.Sprite
 
     fireOn(x, y, flipX) {
         const num = (Math.floor(Math.random() * 2) + 1);
-        const direction = flipX ? -60 : 60;
+        const direction = flipX ? -90 : 90;
         this.setPosition(x + direction * num, y);
         this.play('fireCol', true);
         this.setActive(true);
@@ -57,6 +57,7 @@ class EnemyFire extends Phaser.Physics.Arcade.Sprite
     }
 
     fireOff() {
+        this.body.immovable = true;
         this.fireBallSound.stop();
         this.play('fireCol_off', true);
         setTimeout(() => {

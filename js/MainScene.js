@@ -483,7 +483,7 @@ anadirVida(){
         for (let i=0; i < numBalls; i++) {
             const ball = (new EnemyFire(this, 0, 0, 'fire_col'));
             ball.setSize(20, 50, false);
-            ball.body.offset.y = 40; ball.body.offset.x = 12;
+            ball.body.offset.y = 20; ball.body.offset.x = 12;
             ball.fireOn(this.player.x, -50, this.player.getFlipX());
             this.fireballs.push(ball);
             this.groupFireBalss.add(ball);
@@ -499,9 +499,9 @@ anadirVida(){
             }, 300);
         });
         // Se agrega la colisión entre el grupo de bolas de fuego y el personaje
-        this.physics.add.collider(this.groupFireBalss, this.player, (p, ball)  => {
+        this.physics.add.overlap(this.groupFireBalss, this.player, (p, ball)  => {
             ball.fireOff();
-            this.GameOver();
+            this.verificarContinuaJuego();
         });
     }
 

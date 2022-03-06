@@ -29,7 +29,7 @@ class PinkFire extends Phaser.Physics.Arcade.Sprite
         });
     }
 
-    update()
+    update(time, delta)
     {
         this.play('fire', true);
     }

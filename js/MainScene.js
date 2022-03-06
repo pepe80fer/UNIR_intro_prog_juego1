@@ -104,6 +104,7 @@ class MainScene extends Phaser.Scene
         this.visibilityCounter = 0;
         this.score = 0;
 
+        // this.vidasTiled = map.getObjectLayer('vidas')['objects'];
         //GBW Inicio
         this.objetos = map.getObjectLayer('objetos')['objects'];
         this.setas = [];
@@ -134,31 +135,19 @@ class MainScene extends Phaser.Scene
         this.vida3.setScale(0.1);
         this.vida3.setScrollFactor(0);
 
-        // this.vidaNivel1 = this.add.sprite(370,140,'livesPic');
-        this.vidaNivel1 = this.createExtraLife(this, this.layer, 370, 140);
-        this.vidaNivel1.setScale(0.1);
-        this.physics.add.overlap(this.vidaNivel1, this.player,  function (){
-            this.anadirVida();
-            this.vidaNivel1.destroy();
-        }, null, this);
-        this.vidaNivel1.body.setAllowGravity(false)
+        this.lifesArray = [];
 
-        this.vidaNivel2 = this.createExtraLife(this, this.layer, 3670, 250);
-        this.vidaNivel2.setScale(0.1);
-        this.physics.add.overlap(this.vidaNivel2, this.player,  function (){
-            this.anadirVida();
-            this.vidaNivel2.destroy();
-        }, null, this);
-        this.vidaNivel2.body.setAllowGravity(false)
+        this.createLifes(map.getObjectLayer('vidas')['objects']);
 
-        this.vidaNivel3 = this.createExtraLife(this, this.layer, 4540, 433);
-        this.vidaNivel3.setScale(0.1);
-        this.physics.add.overlap(this.vidaNivel3, this.player,  function (){
-            this.anadirVida();
-            this.vidaNivel3.destroy();
-        }, null, this);
-        this.vidaNivel3.body.setAllowGravity(false)
-
+        for(let i = 0; i<this.lifesArray.length; i++){
+            this.lifesArray[i].setScale(0.1);
+            this.physics.add.overlap(this.lifesArray[i], this.player,  function (){
+                this.anadirVida();
+                this.lifesArray[i].destroy();
+                }, null, this);
+            this.lifesArray[i].body.setAllowGravity(false)
+        }
+        
         //Creación del texto de Score
         this.scoreText = this.add.text(16, 16, 'SCORE: '+ this.score, { 
             fontSize: '20px', 
@@ -238,12 +227,30 @@ class MainScene extends Phaser.Scene
         this.createFireBalls(1);
         // Colisiones y contacto con el escenario y el jugador
         this.setColliderFireBalls();
+
+
     }
 
     createExtraLife(scene, layer, x, y) {
         var extraLife = new Portal(scene, x, y, 'livesPic');
         this.physics.add.collider(extraLife, layer);
+        // this.extraLife.setScale(0.1);
+        // this.physics.add.overlap(this.extraLife, this.player,  function (){
+        //     this.anadirVida();
+        //     this.extraLife.destroy();
+        // }, null, this);
+        // this.extraLife.body.setAllowGravity(false)
         return extraLife;
+    }
+
+    
+    createLifes(lifes) {
+        for(var i = 0; i < lifes.length; ++i)
+        {
+            var obj = lifes[i];
+            let newLife = this.createExtraLife(this, this.layer, obj.x, obj.y);
+            this.lifesArray.push(newLife);
+        }
     }
     //GBW Inicio
     //Método para crear el portal final
